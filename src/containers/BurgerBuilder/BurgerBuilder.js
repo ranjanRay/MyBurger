@@ -7,6 +7,7 @@ import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
 import axios from '../../axios-orders';
 import Spinner from '../../components/UI/Spinner/Spinner';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
+import { withRouter } from 'react-router-dom';
 
 const INGREDIENT_PRICES = {
     Salad: 0.5,
@@ -79,27 +80,36 @@ class BurgerBuilder extends Component {
 
     purchaseContinueHandler = () => {
         // alert('continue');
-        this.setState({ loading: true });
-        const order = {
-            ingredients: this.state.ingredients,
-            price: this.state.totalPrice,
-            customer: {
-                street: 'Teststreet 1',
-                zipCode: '11223344',
-                country: 'Bhutan'
-            },
-            deliveryMethod: 'fastest'
-        };
+        // const order = {
+        //     customer: {
+        //         street: 'Teststreet 111',
+        //         zipCode: '11223344',
+        //         country: 'Bhutan'
+        //     },
+        //     deliveryMethod: 'fastest',
+        //     totalPrice: this.state.totalPrice
+        // };
 
-        axios.post('/orders.json', order)
-            .then(response => this.setState({ loading: false, purchasing: false }))
-            .catch(err => this.setState({ loading: false, purchasing: false }));
-        
+        // axios.post('/orders.json', order)
+        //     .then(res => console.log('response: ', res))
+        //     .catch(err => console.log(err));
+
+        console.log('Inside purchaseContinuedHandler',this.props);
+        const queryParams = [];
+        for(let i in this.state.ingredients) 
+            queryParams.push(encodeURIComponent(i) + '=' + encodeURIComponent(this.state.ingredients[i]))
+
+        queryParams.push("totalPrice=" + this.state.totalPrice);
+        const queryString = queryParams.join('&');
+        this.props.history.push({
+            pathname: '/checkout',
+            search: '?' + queryString
+        });
     }
 
     componentDidMount () {
         console.log('Inside the componentDidMount in the BurgerBuilder.js');
-        axios.get('https://react-burger-app-115c1.firebaseio.com/orders/-LcAs3DlUJ76YHFrnvds/ingredients.json')
+        axios.get('https://react-burger-app-115c1.firebaseio.com/ingredients.json')
             .then(response => this.setState({ ingredients: response.data }))
             .catch(err => this.setState({ error: true }));
 
@@ -114,7 +124,6 @@ class BurgerBuilder extends Component {
 
         let orderSummary = null;        
         let burger = this.state.error ? <p>Ingredients can't be loaded.</p>: <Spinner />;
-        
         if(this.state.ingredients) {
             burger = (
                 <Aux>
@@ -154,4 +163,4 @@ class BurgerBuilder extends Component {
     }
 }
 
-export default withErrorHandler(BurgerBuilder, axios);
+export default withErrorHandler(withRouter(BurgerBuilder), axios);
