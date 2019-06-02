@@ -18,7 +18,7 @@ const burger = props => {
         }, []);
 
         if(transformedIngredients.length === 0) 
-            transformedIngredients.push(<p>Please start adding ingredients.</p>);
+            transformedIngredients.push(<p key={Date.now()}>Please start adding ingredients.</p>);
 
 
     return(
